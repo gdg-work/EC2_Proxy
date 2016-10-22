@@ -1,0 +1,19 @@
+#  
+# install Delegate from distribution, make config file, run the proxy
+#
+---
+- name: delegate
+  sudo: True
+
+    vars:
+        http_listen_port: 8080
+        cache: False
+
+
+    tasks:
+
+        - name: install Delegate
+
+        - name: create config file
+
+        - name: run a proxy server
