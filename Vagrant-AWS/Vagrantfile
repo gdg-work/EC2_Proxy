@@ -1,6 +1,8 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+Vagrant.require_version ">= 1.8"
+
 # This is deprecated. I didn't remove these calls as a reminder to install plugins first
 # Vagrant.require_plugin 'vagrant-aws'
 # Vagrant.require_plugin 'vagrant-ansible'
@@ -26,6 +28,8 @@ Vagrant.configure("2") do |config|
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
   config.vm.network "forwarded_port", guest: 8080, host: 8080
+  config.vm.network "forwarded_port", guest: 8181, host: 8181
+  config.vm.network "forwarded_port", guest: 9050, host: 9050
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
@@ -58,19 +62,23 @@ Vagrant.configure("2") do |config|
   # information on available options.
   # Provider
   config.vm.provider :aws do |aws, override|
-    aws.access_key_id = "AKIAJ3CY52NX5L5N7U5Q"
-    aws.secret_access_key = "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"
-    aws.keypair_name = "awskey"
-    aws.ami = "ami-1d31ce72" # arch-linux-hvm-2016.10.05.x86_64-ebs
+    # this first line can actually be omitted
+    aws.aws_dir = ENV['HOME'] + "/.aws/"
+    aws.aws_profile = "vagrantLopa"
+    aws.keypair_name = "vagrantLopa"
+    # for the next two lines see 
+    # https://www.uplinklabs.net/projects/arch-linux-on-ec2/
+    aws.ami = "ami-3b2ed154" # arch-linux-hvm-2016.10.05
     aws.region = "eu-central-1"
-    aws.instance_type = "t2.nano"
-    aws.security_groups = ["default"]
-    # override.ssh.private_key_path = "path/to/your/awskey.pem"
+    aws.instance_type = "t2.micro"
+    aws.security_groups = ["vagrant"]
+    associate_public_ip = "yes"
+    override.ssh.username = "root"
+    override.ssh.private_key_path = ENV['HOME'] + "/.aws/vagrantLopa.pem"
     aws.tags = {
       'Name' => 'Delegate'
     }
   end
-
 
   # Define a Vagrant Push strategy for pushing to Atlas. Other push strategies
   # such as FTP and Heroku are also available. See the documentation at
@@ -87,7 +95,20 @@ Vagrant.configure("2") do |config|
   #   apt-get install -y apache2
   # SHELL
 
+  config.vm.provision "shell", inline: <<-SHELL
+    python_flag="/var/tmp/Python_Installed"
+    if [ ! -f "${python_flag}" ]; then
+      pacman -Syy
+      pacman -S python2 --needed --noconfirm
+      ln -s /usr/bin/python2 /usr/bin/python
+      ln -s /usr/bin/python2-config /usr/bin/python-config
+      touch "$python_flag"
+    fi
+
+  SHELL
+
   config.vm.provision "ansible" do |ansible|
+    ansible.verbose = "vvvv"
     ansible.playbook = "../Ansible/playbook.yml"
   end
 

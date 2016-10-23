@@ -2,8 +2,8 @@
 # install Delegate from distribution, make config file, run the proxy
 #
 ---
-  - name: Install_Delegate
-    # remote_user: root
+  - name: Install_Proxy
+    remote_user: root
     become_user: root
     become: true
     hosts: all
@@ -26,12 +26,22 @@
         - name: install tor
           pacman: name=tor state=present
 
+        - name: install Privoxy
+          pacman: name=privoxy state=present
+
+          # - name: install tinyproxy
+          # pacman: name=tinyproxy state=present
+
+
         # create config files
         - name: create Ziproxy start-up script for Systemd
           template: src=../Templates/ziproxy/ziproxy.service dest=/usr/lib/systemd/system/ziproxy.service
 
         - name: create Ziproxy config file
           template: src=../Templates/ziproxy/ziproxy.conf dest=/etc/ziproxy/ziproxy.conf
+
+        - name: create Privoxy config file
+          template: src=../Templates/privoxy/config dest=/etc/privoxy/config
 
         - name: create Unbound config file
           template: src=../Templates/unbound/unbound.conf dest=/etc/unbound/unbound.conf
@@ -54,6 +64,9 @@
 
         - name: run a proxy server
           service: name=ziproxy state=started enabled=yes
+
+        - name: run Privoxy server
+          service: name=privoxy state=started enabled=yes
 
         - name: run Tor
           service: name=tor state=started enabled=yes
