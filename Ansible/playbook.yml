@@ -1,9 +1,12 @@
-#  
+#
 # install Delegate from distribution, make config file, run the proxy
 #
 ---
-- name: delegate
-  sudo: True
+  - name: Install_Delegate
+    # remote_user: root
+    become_user: root
+    become: true
+    hosts: all
 
     vars:
         http_listen_port: 8080
@@ -11,9 +14,46 @@
 
 
     tasks:
+        - name: install ziproxy
+          pacman: name=ziproxy state=present
 
-        - name: install Delegate
+        - name: install unbound
+          pacman: name=unbound state=present
 
-        - name: create config file
+        - name: install torsocks
+          pacman: name=torsocks state=present
+
+        - name: install tor
+          pacman: name=tor state=present
+
+        # create config files
+        - name: create Ziproxy start-up script for Systemd
+          template: src=../Templates/ziproxy/ziproxy.service dest=/usr/lib/systemd/system/ziproxy.service
+
+        - name: create Ziproxy config file
+          template: src=../Templates/ziproxy/ziproxy.conf dest=/etc/ziproxy/ziproxy.conf
+
+        - name: create Unbound config file
+          template: src=../Templates/unbound/unbound.conf dest=/etc/unbound/unbound.conf
+
+        - name: create OpenNIC resolvers file for Unbound
+          template: src=../Templates/unbound/opennic.inc dest=/etc/unbound/opennic.inc
+
+        - name: create TOR resolver file for Unbound
+          template: src=../Templates/unbound/tor.inc dest=/etc/unbound/tor.inc
+
+        - name: create TOR config file
+          template: src=../Templates/tor/torrc dest=/etc/tor/torrc
+
+        - name: modify resolv.conf to lookup DNS information in Unbound
+          copy: content="nameserver 127.0.0.1\n" dest=/etc/resolv.conf
+
+        # Run services
+        - name: run DNS server
+          service: name=unbound state=started enabled=yes
 
         - name: run a proxy server
+          service: name=ziproxy state=started enabled=yes
+
+        - name: run Tor
+          service: name=tor state=started enabled=yes

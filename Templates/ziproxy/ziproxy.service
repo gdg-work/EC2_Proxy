@@ -1,0 +1,15 @@
+[Unit]
+Description=ziproxy
+Requires=network.target
+After=network.target syslog.target
+
+[Service]
+Type=forking
+Environment=ZIPROXY_CONFIGFILE="-c /etc/ziproxy/ziproxy.conf"
+EnvironmentFile=-sysconfig/ziproxy
+PIDFile=/var/run/ziproxy.pid
+ExecStart=/usr/bin/ziproxy -d --pid-file=/var/run/ziproxy.pid
+ExecStop=/usr/bin/ziproxy -k --pid-file=/var/run/ziproxy.pid
+
+[Install]
+WantedBy=multi-user.target

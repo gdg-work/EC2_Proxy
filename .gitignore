@@ -1,1 +1,4 @@
 ,*
+Vagrant/.vagrant/*
+Vagrant-AWS/.vagrant/*
+Ansible/playbook.retry

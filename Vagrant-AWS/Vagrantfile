@@ -1,11 +1,9 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# All Vagrant configuration is done below. The "2" in Vagrant.configure
-# configures the configuration version (we support older styles for
-# backwards compatibility). Please don't change it unless you know what
-# you're doing.
-Vagrant.require_version ">= 1.8"
+# This is deprecated. I didn't remove these calls as a reminder to install plugins first
+# Vagrant.require_plugin 'vagrant-aws'
+# Vagrant.require_plugin 'vagrant-ansible'
 
 Vagrant.configure("2") do |config|
   # The most common configuration options are documented and commented below.
@@ -15,19 +13,19 @@ Vagrant.configure("2") do |config|
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
   # config.vm.box = "base"
-  config.vm.box = "ogarcia/archlinux-x64"
+  # config.vm.box = "ogarcia/archlinux-x64"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
-  # config.vm.box_check_update = false
+  config.vm.box_check_update = false
+  config.vm.box = "dummy"
+  config.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
   config.vm.network "forwarded_port", guest: 8080, host: 8080
-  config.vm.network "forwarded_port", guest: 8181, host: 8181
-  config.vm.network "forwarded_port", guest: 9050, host: 9050
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
@@ -58,14 +56,21 @@ Vagrant.configure("2") do |config|
   #
   # View the documentation for the provider you are using for more
   # information on available options.
-  config.vm.provider "virtualbox" do |vb|
-    # Display the VirtualBox GUI when booting the machine
-    vb.gui = false
-    vb.name = "Delegate"
- 
-    # Customize the amount of memory on the VM:
-    vb.memory = "512"
+  # Provider
+  config.vm.provider :aws do |aws, override|
+    aws.access_key_id = "AKIAJ3CY52NX5L5N7U5Q"
+    aws.secret_access_key = "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"
+    aws.keypair_name = "awskey"
+    aws.ami = "ami-1d31ce72" # arch-linux-hvm-2016.10.05.x86_64-ebs
+    aws.region = "eu-central-1"
+    aws.instance_type = "t2.nano"
+    aws.security_groups = ["default"]
+    # override.ssh.private_key_path = "path/to/your/awskey.pem"
+    aws.tags = {
+      'Name' => 'Delegate'
+    }
   end
+
 
   # Define a Vagrant Push strategy for pushing to Atlas. Other push strategies
   # such as FTP and Heroku are also available. See the documentation at
@@ -81,20 +86,8 @@ Vagrant.configure("2") do |config|
   #   apt-get update
   #   apt-get install -y apache2
   # SHELL
-  config.vm.provision "shell", inline: <<-SHELL
-    python_flag="/var/tmp/Python_Installed"
-    if [ ! -f "${python_flag}" ]; then
-      pacman -Syy
-      pacman -S python2 --needed --noconfirm
-      ln -s /usr/bin/python2 /usr/bin/python
-      ln -s /usr/bin/python2-config /usr/bin/python-config
-      touch "$python_flag"
-    fi
-
-  SHELL
 
   config.vm.provision "ansible" do |ansible|
-    ansible.verbose = "v"
     ansible.playbook = "../Ansible/playbook.yml"
   end
 
