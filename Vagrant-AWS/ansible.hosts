@@ -1,0 +1,3 @@
+[proxyhosts]
+# this is a record for manual testing of Ansible configuration and playbooks
+delegate  ansible_ssh_host=ec2-52-57-78-236.eu-central-1.compute.amazonaws.com  ansible_ssh_port=22 ansible_user=root
