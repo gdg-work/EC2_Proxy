@@ -58,7 +58,11 @@
         - name: modify resolv.conf to lookup DNS information in Unbound
           copy: content="nameserver 127.0.0.1\n" dest=/etc/resolv.conf
 
-        # Run services
+        # Manage services
+        - name: turn off and disable systemd-resolver service (we will run our own caching DNS)
+          service: name=systemd-resolved state=stopped enabled=no
+
+
         - name: run DNS server
           service: name=unbound state=started enabled=yes
 
