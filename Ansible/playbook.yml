@@ -14,6 +14,7 @@
 
 
     tasks:
+        # install packages
         - name: install ziproxy
           pacman: name=ziproxy state=present
 
@@ -28,6 +29,9 @@
 
         - name: install Privoxy
           pacman: name=privoxy state=present
+
+        - name: install DNS tools to make lookups
+          pacman: name=bind-tools state=present
 
           # - name: install tinyproxy
           # pacman: name=tinyproxy state=present
