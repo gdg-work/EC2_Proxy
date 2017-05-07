@@ -59,12 +59,20 @@ Vagrant.configure("2") do |config|
     aws.keypair_name = "vagrantLopa"
     # for the next two lines see 
     # https://www.uplinklabs.net/projects/arch-linux-on-ec2/
-    aws.ami = "ami-3b2ed154" # arch-linux-hvm-2016.10.05
+    # aws.ami = "ami-3b2ed154" # arch-linux-hvm-2016.10.05
+    # aws.region = "eu-central-1"
+    
+
+
+    # for the next two lines see 
+    # https://cloud-images.ubuntu.com/locator/ec2
+    # You need (for a T2.Micro instance) a HVM image with storage type ebs*
+    aws.ami = "ami-060cde69" # Ubuntu 16.04 LTS
     aws.region = "eu-central-1"
     aws.instance_type = "t2.micro"
     aws.security_groups = ["vagrant"]
     associate_public_ip = "yes"
-    override.ssh.username = "root"
+    override.ssh.username = "ubuntu"
     override.ssh.private_key_path = ENV['HOME'] + "/.aws/vagrantLopa.pem"
     aws.tags = {
       'Name' => 'Delegate'
@@ -87,15 +95,15 @@ Vagrant.configure("2") do |config|
   # SHELL
 
   config.vm.provision "shell", inline: <<-SHELL
-    python_flag="/var/tmp/Python_Installed"
-    if [ ! -f "${python_flag}" ]; then
-      pacman -Syy
-      pacman -S python2 --needed --noconfirm
-      ln -s /usr/bin/python2 /usr/bin/python
-      ln -s /usr/bin/python2-config /usr/bin/python-config
-      touch "$python_flag"
+    if [ -f /var/tmp/_Python_Installed_ ]
+    then
+      echo "Python is already installed"
+    else
+      sudo apt-get -y update
+      # sudo apt-get -y dist-upgrade
+      sudo apt-get -y install python && 
+      touch /var/tmp/_Python_Installed_
     fi
-
   SHELL
 
   config.vm.provision "ansible" do |ansible|

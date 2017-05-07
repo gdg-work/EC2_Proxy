@@ -16,30 +16,30 @@
     tasks:
         # install packages
         - name: install ziproxy
-          pacman: name=ziproxy state=present
+          apt: name=ziproxy state=present
 
         - name: install unbound
-          pacman: name=unbound state=present
+          apt: name=unbound state=present
 
         - name: install torsocks
-          pacman: name=torsocks state=present
+          apt: name=torsocks state=present
 
         - name: install tor
-          pacman: name=tor state=present
+          apt: name=tor state=present
 
         - name: install Privoxy
-          pacman: name=privoxy state=present
+          apt: name=privoxy state=present
 
-        - name: install DNS tools to make lookups
-          pacman: name=bind-tools state=present
+          # - name: install DNS tools to make lookups -- disabled in Ubuntu
+          # apt: name=bind-tools state=present
 
           # - name: install tinyproxy
           # pacman: name=tinyproxy state=present
 
 
         # create config files
-        - name: create Ziproxy start-up script for Systemd
-          template: src=../Templates/ziproxy/ziproxy.service dest=/usr/lib/systemd/system/ziproxy.service
+          # - name: create Ziproxy start-up script for Systemd -- not needed in Ubuntu
+          # template: src=../Templates/ziproxy/ziproxy.service dest=/usr/lib/systemd/system/ziproxy.service
 
         - name: create Ziproxy config file
           template: src=../Templates/ziproxy/ziproxy.conf dest=/etc/ziproxy/ziproxy.conf
@@ -65,7 +65,6 @@
         # Manage services
         - name: turn off and disable systemd-resolver service (we will run our own caching DNS)
           service: name=systemd-resolved state=stopped enabled=no
-
 
         - name: run DNS server
           service: name=unbound state=started enabled=yes
